@@ -7,21 +7,30 @@ export default {
     theme: {
         extend: {
             colors: {
+                // Minimalist palette
+                background: '#FAFAFA',
+                surface: '#FFFFFF',
                 primary: {
-                    50: '#f0f9ff',
-                    100: '#e0f2fe',
-                    200: '#bae6fd',
-                    300: '#7dd3fc',
-                    400: '#38bdf8',
-                    500: '#0ea5e9',
-                    600: '#0284c7',
-                    700: '#0369a1',
-                    800: '#075985',
-                    900: '#0c4a6e',
+                    50: '#F5F5F5',
+                    100: '#E5E5E5',
+                    200: '#D4D4D4',
+                    300: '#A3A3A3',
+                    400: '#737373',
+                    500: '#525252',
+                    600: '#404040',
+                    700: '#262626',
+                    800: '#171717',
+                    900: '#0A0A0A',
+                    DEFAULT: '#171717', // Soft black
                 },
+                accent: '#2563EB', // Subtle blue for interactions
             },
-            animation: {
-                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            fontFamily: {
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+            boxShadow: {
+                'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
             },
         },
     },

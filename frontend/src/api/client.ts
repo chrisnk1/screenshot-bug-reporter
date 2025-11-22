@@ -17,6 +17,15 @@ export interface ProcessingJob {
 
 const API_BASE = '/api';
 
+export async function checkHealth(): Promise<boolean> {
+    try {
+        await axios.get(`${API_BASE}/health`);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export async function uploadScreenshot(file: File): Promise<{ jobId: string }> {
     const formData = new FormData();
     formData.append('screenshot', file);
