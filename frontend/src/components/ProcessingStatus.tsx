@@ -82,6 +82,20 @@ export function ProcessingStatus({ job }: ProcessingStatusProps) {
                 })}
             </div>
 
+            {/* Live Logs */}
+            {job.logs && job.logs.length > 0 && (
+                <div className="mt-4 bg-gray-900 rounded-lg p-4 font-mono text-xs h-48 overflow-y-auto">
+                    <div className="space-y-1">
+                        {job.logs.map((log, index) => (
+                            <div key={index} className="text-gray-300 border-b border-gray-800 pb-1 last:border-0 last:pb-0">
+                                <span className="text-gray-500 mr-2">[{index + 1}]</span>
+                                {log}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Bug Analysis Preview */}
             {job.bugAnalysis && (
                 <div className="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-100">

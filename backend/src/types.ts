@@ -21,6 +21,7 @@ export interface ProcessingJob {
     status: 'pending' | 'analyzing' | 'gathering-context' | 'creating-ticket' | 'completed' | 'failed';
     progress: number;
     currentStep: string;
+    logs?: string[];
     bugAnalysis?: BugAnalysis;
     browserContext?: BrowserContext;
     ticketUrl?: string;

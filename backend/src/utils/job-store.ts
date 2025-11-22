@@ -9,6 +9,7 @@ export function createJob(id: string): ProcessingJob {
         status: 'pending',
         progress: 0,
         currentStep: 'Initializing...',
+        logs: ['Initializing job...'],
         createdAt: new Date(),
         updatedAt: new Date(),
     };
@@ -34,4 +35,13 @@ export function getJob(id: string): ProcessingJob | undefined {
 
 export function deleteJob(id: string): boolean {
     return jobs.delete(id);
+}
+
+export function addJobLog(id: string, message: string) {
+    const job = jobs.get(id);
+    if (job) {
+        if (!job.logs) job.logs = [];
+        job.logs.push(message);
+        job.updatedAt = new Date();
+    }
 }
