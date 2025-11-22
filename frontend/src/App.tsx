@@ -98,15 +98,14 @@ function App() {
 
                 {/* Footer */}
                 <div className="text-center text-sm text-gray-400 space-y-2">
-                    <p>
-                        Powered by <span className="font-semibold text-primary-400">Claude Vision</span> + <span className="font-semibold text-purple-400">Linear API</span>
-                    </p>
-                    <p className="text-xs">
-                        Save 10+ minutes per bug report • Automatic analysis • Perfect formatting
-                    </p>
-                </div>
+                    Powered by <span className="font-semibold text-primary-400">Gemini 2.5 Flash</span> + <span className="font-semibold text-purple-400">E2B Sandboxes</span>
+                </p>
+                <p className="text-xs">
+                    Save 10+ minutes per bug report • Automatic analysis • Perfect formatting
+                </p>
             </div>
         </div>
+        </div >
     );
 }
 

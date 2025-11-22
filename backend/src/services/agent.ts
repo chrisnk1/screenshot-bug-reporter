@@ -99,6 +99,15 @@ export async function runAgent(
                         });
 
                         try {
+                            // Update status for frontend stepper
+                            if (call.name === 'create_linear_ticket') {
+                                updateJob(jobId, {
+                                    status: 'creating-ticket',
+                                    progress: 85,
+                                    currentStep: 'Creating Linear ticket...',
+                                });
+                            }
+
                             const toolResult = await tool.execute(call.args, context);
                             functionResponses.push({
                                 functionResponse: {
