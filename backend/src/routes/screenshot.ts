@@ -2,11 +2,8 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import sharp from 'sharp';
-import { analyzeScreenshot } from '../services/vision-analyzer.js';
-import { uploadImage } from '../services/image-uploader.js';
-import { createLinearIssue } from '../services/linear-client.js';
-import { formatTicket } from '../utils/ticket-formatter.js';
 import { createJob, updateJob, getJob } from '../utils/job-store.js';
+import { runAgent } from '../services/agent.js';
 
 export function registerScreenshotRoutes(fastify: FastifyInstance) {
     /**
@@ -82,6 +79,7 @@ export function registerScreenshotRoutes(fastify: FastifyInstance) {
  * Process a screenshot through the entire pipeline
  */
 async function processScreenshot(jobId: string, imagePath: string, mimeType: string): Promise<void> {
+    let optimizedPath = '';
     try {
         // Step 1: Optimize image
         updateJob(jobId, {
@@ -90,59 +88,18 @@ async function processScreenshot(jobId: string, imagePath: string, mimeType: str
             currentStep: 'Optimizing image...',
         });
 
-        const optimizedPath = await optimizeImage(imagePath);
+        optimizedPath = await optimizeImage(imagePath);
 
-        // Step 2: Analyze with vision AI
-        updateJob(jobId, {
-            progress: 20,
-            currentStep: 'Analyzing screenshot with AI...',
-        });
-
+        // Step 2: Prepare for Agent
         const imageBuffer = await fs.readFile(optimizedPath);
         const base64Image = imageBuffer.toString('base64');
-        const analysis = await analyzeScreenshot(base64Image, mimeType);
 
-        updateJob(jobId, {
-            progress: 50,
-            bugAnalysis: analysis,
-            currentStep: 'Bug analysis complete',
-        });
+        // Step 3: Run Agent
+        // The agent handles the rest: analysis, sandbox creation, tool usage, ticket creation
+        await runAgent(jobId, base64Image, mimeType, optimizedPath);
 
-        // Step 3: Upload screenshot
-        updateJob(jobId, {
-            status: 'creating-ticket',
-            progress: 60,
-            currentStep: 'Uploading screenshot...',
-        });
-
-        const uploadResult = await uploadImage(optimizedPath);
-
-        // Step 4: Format ticket
-        updateJob(jobId, {
-            progress: 70,
-            currentStep: 'Formatting ticket...',
-        });
-
-        const ticketData = formatTicket(analysis, undefined, uploadResult.url);
-
-        // Step 5: Create Linear ticket
-        updateJob(jobId, {
-            progress: 80,
-            currentStep: 'Creating Linear ticket...',
-        });
-
-        const linearIssue = await createLinearIssue(ticketData);
-
-        // Step 6: Complete
-        updateJob(jobId, {
-            status: 'completed',
-            progress: 100,
-            currentStep: 'Done!',
-            ticketUrl: linearIssue.url,
-            ticketId: linearIssue.identifier,
-        });
-
-        // Cleanup
+        // Cleanup original file (optimized file is cleaned up by agent or here if we want)
+        // Actually agent doesn't clean up files, so we should do it here after agent returns
         await cleanupFiles(imagePath, optimizedPath);
 
     } catch (error) {
@@ -155,7 +112,7 @@ async function processScreenshot(jobId: string, imagePath: string, mimeType: str
 
         // Cleanup on error
         try {
-            await fs.unlink(imagePath);
+            await cleanupFiles(imagePath, optimizedPath);
         } catch { }
     }
 }

@@ -1,13 +1,11 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { config } from '../config/env.js';
 import type { BugAnalysis } from '../types.js';
 
-const anthropic = new Anthropic({
-    apiKey: config.anthropicApiKey,
-});
+const genAI = new GoogleGenerativeAI(config.geminiApiKey);
 
 export async function analyzeScreenshot(imageBase64: string, mimeType: string): Promise<BugAnalysis> {
-    console.log('🔍 Analyzing screenshot with Claude Vision...');
+    console.log('🔍 Analyzing screenshot with Gemini 2.5 Flash...');
 
     const prompt = `You are an expert QA engineer analyzing a screenshot for bug reporting. 
 
@@ -39,39 +37,25 @@ Return your analysis in this exact JSON format:
 Be thorough and extract as much detail as possible. If you can't find something, use empty arrays or appropriate defaults.`;
 
     try {
-        const response = await anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 2000,
-            messages: [
-                {
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image',
-                            source: {
-                                type: 'base64',
-                                media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-                                data: imageBase64,
-                            },
-                        },
-                        {
-                            type: 'text',
-                            text: prompt,
-                        },
-                    ],
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+
+        const result = await model.generateContent([
+            prompt,
+            {
+                inlineData: {
+                    mimeType,
+                    data: imageBase64,
                 },
-            ],
-        });
+            },
+        ]);
 
-        const textContent = response.content.find(block => block.type === 'text');
-        if (!textContent || textContent.type !== 'text') {
-            throw new Error('No text response from Claude');
-        }
+        const response = await result.response;
+        const text = response.text();
 
-        // Extract JSON from the response (Claude might wrap it in markdown)
-        const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+        // Extract JSON from the response (Gemini might wrap it in markdown)
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            throw new Error('Could not extract JSON from Claude response');
+            throw new Error('Could not extract JSON from Gemini response');
         }
 
         const analysis = JSON.parse(jsonMatch[0]) as BugAnalysis;

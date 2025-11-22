@@ -36,7 +36,8 @@ fastify.get('/api/health', async () => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         services: {
-            anthropic: !!config.anthropicApiKey,
+            gemini: !!config.geminiApiKey,
+            e2b: !!config.e2bApiKey,
             linear: !!config.linearApiKey,
             browserbase: !!config.browserbaseApiKey,
             imageUpload: !!config.imgbbApiKey || 'base64 fallback',
